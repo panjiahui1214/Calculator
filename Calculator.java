@@ -11,24 +11,11 @@ public class Calculator extends JFrame {
     }
 
     private JPanel showPanel = new JPanel();
-    private JLabel showText = new JLabel("0");
+    private JLabel showText = new JLabel();
     private JPanel btnPanel = new JPanel();
     private String[] btnArray = {"7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"};
-//    private JButton btn1 = new JButton("1");
-//    private JButton btn2 = new JButton("2");
-//    private JButton btn3 = new JButton("3");
-//    private JButton btn4 = new JButton("4");
-//    private JButton btn5 = new JButton("5");
-//    private JButton btn6 = new JButton("6");
-//    private JButton btn7 = new JButton("7");
-//    private JButton btn8 = new JButton("8");
-//    private JButton btn9 = new JButton("9");
-//    private JButton btn0 = new JButton("0");
-//    private JButton btnAdd = new JButton("+");
-//    private JButton btnSub = new JButton("-");
-//    private JButton btnMul = new JButton("*");
-//    private JButton btnDiv = new JButton("/");
     private ActionListener btnListener;
+    private Boolean flag = true; // 标记点击按钮前是否为=操作
     private Font bigFont = new Font("微软雅黑", Font.BOLD, 24);
 
     public Calculator() {
@@ -55,7 +42,12 @@ public class Calculator extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JButton btn = (JButton)e.getSource();
-                showText.setText(btn.getText());
+                if (btn.getText() != "=") {
+                    showText.setText(showText.getText() + btn.getText());
+                }
+                else {
+                    showText.setText("计算结果");
+                }
             }
         };
     }
