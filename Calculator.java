@@ -18,6 +18,7 @@ public class Calculator extends JFrame {
     private ActionListener btnListener;
     private Font bigFont = new Font("微软雅黑", Font.BOLD, 24);
 
+    private Double result;
     private Boolean isOperator = false; // 标记刚输入的是否为符号
     private Boolean ifNotCount = false; // 标记是否未计算
 
@@ -54,11 +55,9 @@ public class Calculator extends JFrame {
                     if (oldShow.isEmpty() || isOperator) {
                         showText.setText(input);
                     }
-                    else if ((oldShow + input).indexOf(".") == -1) {
-                        showText.setText(oldShow + input);
-                    }
                     else {
-                        showText.setText(Double.parseDouble(oldShow + input) + "");
+//                        showText.setText(formatNumber(oldShow, input));
+                        showText.setText(oldShow + input);
                     }
                     isOperator = false;
                 }
@@ -75,6 +74,10 @@ public class Calculator extends JFrame {
                 }
             }
         };
+    }
+    protected String formatNumber(String oldShow, String input) {
+        return ((oldShow + input).indexOf(".") == -1) ?
+                (oldShow + input) : (Double.parseDouble(oldShow + input) + "");
     }
 
     protected void addElement() {
