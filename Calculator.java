@@ -1,5 +1,5 @@
+import java.util.regex.*;
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,11 +12,14 @@ public class Calculator extends JFrame {
 
     private JPanel showPanel = new JPanel();
     private JLabel showText = new JLabel();
+    private JLabel showMoreText = new JLabel();
     private JPanel btnPanel = new JPanel();
     private String[] btnArray = {"7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"};
     private ActionListener btnListener;
-    private Boolean flag = true; // 标记点击按钮前是否为=操作
     private Font bigFont = new Font("微软雅黑", Font.BOLD, 24);
+
+    private Boolean isOperator = false; // 标记刚输入的是否为符号
+    private Boolean ifNotCount = false; // 标记是否未计算
 
     public Calculator() {
         this.setElement();
@@ -31,8 +34,11 @@ public class Calculator extends JFrame {
         showPanel.setLayout(null);
         showText.setBounds(0, 0, 200, 60);
         showText.setHorizontalAlignment(JLabel.RIGHT);
+        showText.setVerticalAlignment(JLabel.BOTTOM);
         showText.setFont(bigFont);
         showText.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        showMoreText.setBounds(0, 0, 200, 30);
+        showMoreText.setHorizontalAlignment(JLabel.RIGHT);
         btnPanel.setBounds(10, 80, 200, 220);
         btnPanel.setLayout(new GridLayout(4, 4, 10, 10));
     }
@@ -42,11 +48,30 @@ public class Calculator extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JButton btn = (JButton)e.getSource();
-                if (btn.getText() != "=") {
-                    showText.setText(showText.getText() + btn.getText());
+                String input = btn.getText();
+                String oldShow = showText.getText();
+                if (Pattern.matches("\\d", input)) {
+                    if (oldShow.isEmpty() || isOperator) {
+                        showText.setText(input);
+                    }
+                    else if ((oldShow + input).indexOf(".") == -1) {
+                        showText.setText(oldShow + input);
+                    }
+                    else {
+                        showText.setText(Double.parseDouble(oldShow + input) + "");
+                    }
+                    isOperator = false;
+                }
+                else if (input.equals(".")) {
+                    showText.setText(oldShow + input);
+                }
+                else if (Pattern.matches("[\\+\\-\\*/]", input)) {
+
+                    showMoreText.setText(oldShow + " " + input + " ");
+                    isOperator = true;
                 }
                 else {
-                    showText.setText("计算结果");
+
                 }
             }
         };
@@ -54,6 +79,7 @@ public class Calculator extends JFrame {
 
     protected void addElement() {
         showPanel.add(showText);
+        showPanel.add(showMoreText);
         forBtn();
         this.add(showPanel);
         this.add(btnPanel);
@@ -61,7 +87,7 @@ public class Calculator extends JFrame {
 
     protected void setSelf() {
         this.setTitle("计算器");
-        this.setBounds(300, 200, 226, 350);
+        this.setBounds(300, 200, 226, 340);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
