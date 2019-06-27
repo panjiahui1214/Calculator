@@ -18,9 +18,9 @@ public class Calculator extends JFrame {
     private ActionListener btnListener;
     private Font bigFont = new Font("微软雅黑", Font.BOLD, 24);
 
-    private Double result;
-    private Boolean isOperator = false; // 标记刚输入的是否为符号
-    private Boolean ifNotCount = false; // 标记是否未计算
+    private Float num1;
+    private String operator;
+    private Float num2;
 
     public Calculator() {
         this.setElement();
@@ -52,22 +52,19 @@ public class Calculator extends JFrame {
                 String input = btn.getText();
                 String oldShow = showText.getText();
                 if (Pattern.matches("\\d", input)) {
-                    if (oldShow.isEmpty() || isOperator) {
-                        showText.setText(input);
+                    if (null == operator) {
+                        inputNumJudgeNum(input, num1, true);
                     }
                     else {
-//                        showText.setText(formatNumber(oldShow, input));
-                        showText.setText(oldShow + input);
+                        inputNumJudgeNum(input, num2, false);
                     }
-                    isOperator = false;
-                }
-                else if (input.equals(".")) {
-                    showText.setText(oldShow + input);
                 }
                 else if (Pattern.matches("[\\+\\-\\*/]", input)) {
+                    operator = input;
+                    
+                }
+                else if (input.equals(".")) {
 
-                    showMoreText.setText(oldShow + " " + input + " ");
-                    isOperator = true;
                 }
                 else {
 
@@ -75,9 +72,21 @@ public class Calculator extends JFrame {
             }
         };
     }
-    protected String formatNumber(String oldShow, String input) {
-        return ((oldShow + input).indexOf(".") == -1) ?
-                (oldShow + input) : (Double.parseDouble(oldShow + input) + "");
+    protected void inputNumJudgeNum(String input, Float num, Boolean isNum1) {
+        if (null == num){
+            if (isNum1) { num1 = new Float(input); }
+            else        { num2 = new Float(input); }
+            showText.setText(input);
+        }
+        else {
+            Float newNum = numConcatNum(input, num);
+            if (isNum1) { num1 = newNum; }
+            else        { num2 = newNum; }
+            showText.setText(newNum.toString());
+        }
+    }
+    protected Float numConcatNum(String input, Float oldNum) {
+        return oldNum * 10 + new Float(input);
     }
 
     protected void addElement() {
