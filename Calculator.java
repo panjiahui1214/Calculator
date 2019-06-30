@@ -11,7 +11,7 @@ public class Calculator extends JFrame {
     }
 
     private JPanel showPanel = new JPanel();
-    private JLabel showText = new JLabel();
+    private JLabel showText = new JLabel("0");
     private JLabel showMoreText = new JLabel();
     private JPanel btnPanel = new JPanel();
     private String[] btnArray = {"7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"};
@@ -50,8 +50,7 @@ public class Calculator extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JButton btn = (JButton)e.getSource();
                 String input = btn.getText();
-                String oldShow = showText.getText();
-                if (Pattern.matches("\\d", input)) {
+                if (Pattern.matches("\\d", input)) { // 输入数字
                     if (null == operator) {
                         inputNumJudgeNum(input, num1, true);
                     }
@@ -59,19 +58,43 @@ public class Calculator extends JFrame {
                         inputNumJudgeNum(input, num2, false);
                     }
                 }
-                else if (Pattern.matches("[\\+\\-\\*/]", input)) {
-                    operator = input;
-                    
+                else if (Pattern.matches("[\\+\\-\\*/]", input)) { // 输入加减乘除
+                    if(null == operator) {
+                        num1 = (null == num1) ? Float.parseFloat(showText.getText()) : num1;
+                        showMoreText.setText(formatNum(num1) + " " + input);
+                        operator = input;
+                    }
+                    else {
+                        num1 = calculator(num1, num2, operator);
+                        showText.setText(formatNum(num1) + "");
+                        showMoreText.setText(showMoreText.getText() +" "+ formatNum(num2) +" "+ operator);
+                        operator = input;
+                        num2 = null;
+                        operator = null;
+                    }
                 }
-                else if (input.equals(".")) {
-
+                else if (input.equals(".")) { // 输入小数点
+                    if (null == operator) {
+                        showText.setText((null == num1) ? "0." : (num1 + "."));
+                    }
+                    else {
+                        showText.setText((null == num2) ? "0." : (num2 + "."));
+                    }
                 }
-                else {
-
+                else { // 输入等号
+                    if (null != operator) {
+                        num2 = ((null == num2) ? num1 : num2);
+                        showText.setText(formatNum(calculator(num1, num2, operator)));
+                        showMoreText.setText(null);
+                        num1 = null;
+                        num2 = null;
+                        operator = null;
+                    }
                 }
             }
         };
     }
+    // 判断某个操作数是否为空，是则直接输出数字，否则进行数字的连接
     protected void inputNumJudgeNum(String input, Float num, Boolean isNum1) {
         if (null == num){
             if (isNum1) { num1 = new Float(input); }
@@ -82,11 +105,36 @@ public class Calculator extends JFrame {
             Float newNum = numConcatNum(input, num);
             if (isNum1) { num1 = newNum; }
             else        { num2 = newNum; }
-            showText.setText(newNum.toString());
+            showText.setText(formatNum(newNum).toString());
         }
     }
+    // 连接旧数字与新数字
     protected Float numConcatNum(String input, Float oldNum) {
         return oldNum * 10 + new Float(input);
+    }
+    // 格式化输出数字
+    protected String formatNum(Float num) {
+        String sNum = num.toString();
+        return Pattern.matches("\\d+.0", sNum) ? num.intValue()+"" : sNum;
+    }
+    // 根据加减乘除计算结果
+    protected Float calculator(Float n1, Float n2, String oper) {
+        Float result = 0.0F;
+        switch (oper) {
+            case "+":
+                result = n1 + n2;
+                break;
+            case "-":
+                result = n1 - n2;
+                break;
+            case "*":
+                result = n1 * n2;
+                break;
+            case "/":
+                result = n1 / n2;
+                break;
+        }
+        return result;
     }
 
     protected void addElement() {
