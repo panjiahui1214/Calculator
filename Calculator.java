@@ -18,9 +18,10 @@ public class Calculator extends JFrame {
     private ActionListener btnListener;
     private Font bigFont = new Font("微软雅黑", Font.BOLD, 24);
 
-    private Float num1;
-    private String operator;
-    private Float num2;
+    private Float num1; // 操作数1
+    private String operator; // 操作符
+    private Boolean isCalculate = false; // 标记是否刚计算完毕
+    private Boolean isOperate = false; // 标记是否正在操作操作符
 
     public Calculator() {
         this.setElement();
@@ -50,67 +51,54 @@ public class Calculator extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JButton btn = (JButton)e.getSource();
                 String input = btn.getText();
+                String oldText = showText.getText();
+                String oldMoreText = showMoreText.getText();
                 if (Pattern.matches("\\d", input)) { // 输入数字
-                    if (null == operator) {
-                        inputNumJudgeNum(input, num1, true);
+                    if (oldText.equals("0") || isCalculate == true || isOperate == true) {
+                        // 重置数字显示区域
+                        showText.setText(input);
                     }
                     else {
-                        inputNumJudgeNum(input, num2, false);
+                        // 连接旧数字显示
+                        showText.setText(oldText + input);
                     }
+                    isCalculate = false;
+                    isOperate = false;
                 }
-                else if (Pattern.matches("[\\+\\-\\*/]", input)) { // 输入加减乘除
-                    if(null == operator) {
-                        num1 = (null == num1) ? Float.parseFloat(showText.getText()) : num1;
-                        showMoreText.setText(formatNum(num1) + " " + input);
-                        operator = input;
+                else if (Pattern.matches("[\\+\\-\\*/]", input)) { // 输入操作符
+                    if (null == operator) {
+                        // 还没有输入过操作符
+                        num1 = Float.parseFloat(oldText);
+                        showMoreText.setText(oldText + " " + input);
                     }
-                    else {
-                        num1 = calculator(num1, num2, operator);
-                        showText.setText(formatNum(num1) + "");
-                        showMoreText.setText(showMoreText.getText() +" "+ formatNum(num2) +" "+ operator);
-                        operator = input;
-                        num2 = null;
-                        operator = null;
+                    else if (null != operator && isOperate == true) {
+                        // 已经输入过操作符，且刚刚输入的是操作符，则变更操作符
+                        showMoreText.setText(oldMoreText.substring(0, oldMoreText.length()-1) + input);
                     }
+                    else if (null != operator && isOperate == false) {
+                        // 已经输入过操作符，且刚刚输入的是数字，则先对前面的进行计算
+                        isCalculate = true;
+                        Float result = calculate(num1, operator, Float.parseFloat(oldText));
+                        showText.setText(formatNum(result));
+                        num1 = result;
+                        showMoreText.setText(oldMoreText + " " + oldText + " " + input);
+                    }
+                    isOperate = true;
+                    operator = input;
                 }
                 else if (input.equals(".")) { // 输入小数点
-                    if (null == operator) {
-                        showText.setText((null == num1) ? "0." : (num1 + "."));
-                    }
-                    else {
-                        showText.setText((null == num2) ? "0." : (num2 + "."));
-                    }
+                    showText.setText(showText.getText() + ".");
                 }
-                else { // 输入等号
-                    if (null != operator) {
-                        num2 = ((null == num2) ? num1 : num2);
-                        showText.setText(formatNum(calculator(num1, num2, operator)));
-                        showMoreText.setText(null);
-                        num1 = null;
-                        num2 = null;
-                        operator = null;
-                    }
+                else if (input.equals("=") && null != num1 && null != operator) { // 输入等号
+                    isCalculate = true;
+                    Float result = calculate(num1, operator, Float.parseFloat(oldText));
+                    showText.setText(formatNum(result));
+                    showMoreText.setText(null);
+                    num1 = null;
+                    operator = null;
                 }
             }
         };
-    }
-    // 判断某个操作数是否为空，是则直接输出数字，否则进行数字的连接
-    protected void inputNumJudgeNum(String input, Float num, Boolean isNum1) {
-        if (null == num){
-            if (isNum1) { num1 = new Float(input); }
-            else        { num2 = new Float(input); }
-            showText.setText(input);
-        }
-        else {
-            Float newNum = numConcatNum(input, num);
-            if (isNum1) { num1 = newNum; }
-            else        { num2 = newNum; }
-            showText.setText(formatNum(newNum).toString());
-        }
-    }
-    // 连接旧数字与新数字
-    protected Float numConcatNum(String input, Float oldNum) {
-        return oldNum * 10 + new Float(input);
     }
     // 格式化输出数字
     protected String formatNum(Float num) {
@@ -118,7 +106,7 @@ public class Calculator extends JFrame {
         return Pattern.matches("\\d+.0", sNum) ? num.intValue()+"" : sNum;
     }
     // 根据加减乘除计算结果
-    protected Float calculator(Float n1, Float n2, String oper) {
+    protected Float calculate(Float n1, String oper, Float n2) {
         Float result = 0.0F;
         switch (oper) {
             case "+":
